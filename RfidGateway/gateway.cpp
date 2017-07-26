@@ -7,6 +7,7 @@
 Gateway::Gateway(QObject *parent) : QObject(parent)
 {
     connect(&com, SIGNAL(readyRead()), this, SLOT(readGatewayData()));
+    connect(&timer_scan, SIGNAL(timeout()), this, SLOT(scanTimeout()));
 }
 
 void Gateway::updateDevice(QComboBox *devList)
@@ -48,21 +49,73 @@ void Gateway::readData()
 
         QByteArray onePack = buff.left(len);
         buff.remove(0, len);
-        if(gatewat_state == 1)
+        if(gateway_state == 1)
         {
-            nodes<<QString(onePack.mid(2, 4).toHex());
+            if(onePack.mid(2, 4) == QByteArray::fromHex("ffffffff"))
+                continue;
+            nodelist<<QString(onePack.mid(2, 4).toHex());
+            emit newNode(nodelist.last());
+        }
+        else if(gateway_state == 2)
+        {
+            emit nodeFire(QString(onePack.mid(2, 4).toHex()));
         }
 
-
         qDebug()<<"[onePack]"<<onePack;
+    }
+}
+
+void Gateway::startScan()
+{
+    scanPorcess = 0;
+    timer_scan.start(200);
+}
+
+void Gateway::scanOver()
+{
+    int i = 0;
+    int j = 0;
+    int lastCount = nodelist.count()%60;
+    int dataCount = nodelist.count()/60+(lastCount!=0);
+
+    for(j=0; j<dataCount; j++)
+    {
+        QByteArray qba = QByteArray::fromHex("fe0002");
+        if(j == dataCount-1)
+            for(i=0; i<lastCount; i++)
+            {
+                QString node = nodelist.at(i);
+                qba += QByteArray::fromHex(node.toLocal8Bit());
+            }
+        else
+            for(i=0; i<60; i++)
+            {
+                QString node = nodelist.at(i);
+                qba += QByteArray::fromHex(node.toLocal8Bit());
+            }
+        qba.append(0xff);
+        qba[1] = qba.size();
+        qDebug()<<qba.toHex();
+        emit nodeReport(qba);
     }
 }
 
 void Gateway::readGatewayData()
 {
     buff.append(com.readAll());
-    qDebug()<<"[readGatewayData]"<<buff;
+    qDebug()<<"[readGatewayData]"<<buff.toHex();
     readData();
+}
+
+void Gateway::scanTimeout()
+{
+    scanPorcess++;
+    emit scanProgress(scanPorcess);
+    if(scanPorcess>=100)
+    {
+        timer_scan.stop();
+        scanOver();
+    }
 }
 
 bool Gateway::openDevice(QString dev)
@@ -91,11 +144,13 @@ void Gateway::broadcast()
 {
     if(devReady)
     {
-        nodes.clear();
-        gatewat_state = 1;
-        QByteArray qba = QByteArray::fromHex(API_BROADCAST);
-        qDebug()<<"[broadcast]"<<qba.toHex();
-        com.write(qba);
+        nodelist.clear();
+        gateway_state = 1;
+        QByteArray qba;
+        qba = QByteArray::fromHex("fe07ffffffffff");
+        qDebug()<<"[broadcast>>>>>>>>>]"<<qba.toHex();
+        qDebug()<<com.write(qba.data(),7);
+        startScan();
     }
 }
 
@@ -103,11 +158,27 @@ void Gateway::nodeCheck(QByteArray nodeId)
 {
     if(devReady)
     {
-        gatewat_state = 2;
+        gateway_state = 2;
         QByteArray qba = QByteArray::fromHex("fe07" + nodeId + "ff");
         qba[1] = qba.size();
         qDebug()<<"[nodeCheck]"<<qba.toHex();
         com.write(qba);
+    }
+}
+
+void Gateway::gatewayCtrl(QByteArray qba)
+{
+    if(devReady)
+    {
+        if(qba.mid(2,4) == QByteArray::fromHex("ffffffff"))
+        {
+            emit clearNodes();
+            broadcast();
+        }
+        else
+        {
+            gateway_state = 2;
+        }
     }
 }
 

@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/">
+        <file>imgs/app.png</file>
+        <file>imgs/arrow.png</file>
+        <file>imgs/setting.png</file>
+        <file>imgs/systray.png</file>
+        <file>imgs/update.png</file>
+    </qresource>
+</RCC>

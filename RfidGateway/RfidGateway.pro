@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui serialport
+QT       += core gui serialport network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -25,9 +25,17 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += main.cpp\
         widget.cpp \
-    gateway.cpp
+    gateway.cpp \
+    server.cpp \
+    serverconfig.cpp
 
 HEADERS  += widget.h \
-    gateway.h
+    gateway.h \
+    server.h \
+    serverconfig.h
 
-FORMS    += widget.ui
+FORMS    += widget.ui \
+    serverconfig.ui
+
+RESOURCES += \
+    img.qrc
