@@ -99,7 +99,7 @@ background-color: rgba(22, 52, 73, 200);</string>
     </rect>
    </property>
    <property name="text">
-    <string>广播</string>
+    <string>扫描测试</string>
    </property>
   </widget>
   <widget class="QPushButton" name="check">
@@ -112,7 +112,7 @@ background-color: rgba(22, 52, 73, 200);</string>
     </rect>
    </property>
    <property name="text">
-    <string>点播</string>
+    <string>点亮测试</string>
    </property>
   </widget>
   <widget class="QTableWidget" name="nodeList">

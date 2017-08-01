@@ -15,6 +15,7 @@ Widget::Widget(QWidget *parent) :
     ui(new Ui::Widget)
 {
     ui->setupUi(this);
+    this->setWindowTitle("仓库标签管理");
     this->setWindowFlags(Qt::FramelessWindowHint);
     this->setAttribute(Qt::WA_TranslucentBackground, true);
     ui->dev->setView(new QListView());
@@ -22,9 +23,10 @@ Widget::Widget(QWidget *parent) :
     ui->fire_id->hide();
     ui->nodeList->setColumnCount(1);
     ui->nodeList->setHorizontalHeaderLabels(QStringList("节点列表"));
-    ui->nodeList->horizontalHeader()->setStyleSheet("QHeaderView::section{font: 18px \"微软雅黑\";\
+    ui->nodeList->horizontalHeader()->setStyleSheet("QHeaderView::section{font: 15px \"微软雅黑\";\
                                                     color: rgb(255,255,255);\
                                                     background-color: rgb(22, 52, 73);}");
+    ui->nodeList->horizontalHeader()->setFixedHeight(28);
 //    ui->scanProgress->hide();
     dev_gateway = new Gateway(this);
     dev_gateway->updateDevice(ui->dev);
@@ -216,7 +218,7 @@ void Widget::creatSystemTray()
 {
     sysTray = new QSystemTrayIcon();
     sysTray->setIcon(QIcon(":/imgs/systray.png"));
-    sysTray->setToolTip("德荣仓库标签管理终端");
+    sysTray->setToolTip("仓库标签管理");
     systrayMenu = new QMenu(this);
     act_show = new QAction("打开主面板");
     act_close = new QAction("退出");
